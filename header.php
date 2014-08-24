@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <?php
-	$options = get_option('infinite_options');
+    $options = get_option('infinite_options');
 	
 	$boxed_or_stretched = $options['boxed_or_stretched'];
 	$call = $options['call'];
@@ -299,7 +299,6 @@ if ($layout == "boxed")
                 <div id="primary-menu">
 
                 <?php
-
                     if (is_user_logged_in()){
                         wp_nav_menu( array(
                         'menu' => "LoggedInUserMenu",
