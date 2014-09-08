@@ -35,7 +35,7 @@ if(!$human == 0){
         login_form_response("error",$email_invalid);
       }else{
         $strResponse = custom_login($strUserName,$arrUserPost['user_pass']);
-        wp_safe_redirect(home_url()."/workout-gallery/");     //Redirect to login page on successful login
+        wp_safe_redirect(home_url()."/profile/");     //Redirect to profile page on successful login
       }
 	 }else{
 	   login_form_response("error",$field_blank_message);   

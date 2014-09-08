@@ -1,0 +1,8 @@
+ALTER TABLE wp_users ENGINE=InnoDB;
+ALTER TABLE wp_measurements ENGINE=InnoDB;
+ALTER TABLE wp_measurements_history ENGINE=InnoDB;
+
+ALTER TABLE `wp_measurements` ADD `user_id` BIGINT UNSIGNED NOT NULL , ADD UNIQUE (`user_id`) ;
+
+
+ALTER TABLE `wp_measurements` ADD FOREIGN KEY (`user_id`) REFERENCES `shivsrfo_nufits_backup`.`wp_users`(`ID`) ON DELETE CASCADE ON UPDATE CASCADE;

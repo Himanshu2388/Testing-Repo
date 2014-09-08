@@ -155,83 +155,120 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
                 }
               </style>
 
-              <div class="one">
-              <form action ="<?php the_permalink(); ?>" method="Post" id="registrationForm"  name="registrationForm">
-                 <?php echo $response; ?> <br>
-                <h2 class="title">Basic Details</h2>
-                <div class="divider" style="height: 30px;"></div>
-                <div class="clear"></div>
-                <div class="one-half"></div>
-                <div class="one-half last"></div>
-                <div class="one-fourth"><span class="font-bold">Full Name </span><span class="required">*</span></div>
-                <div class="one-fourth"><input name="fullName" type="text" id="fullName" placeholder="Full Name" value="<?php echo esc_attr($_POST['fullName']); ?>"></div>
-                <div class="one-fourth"><span class="font-bold">E-mail</span><span class="required">*</span></div>
-                <div class="one-fourth last"><input name="email" id="email" type="email" placeholder="sample@example.com" title = "Please enter valid email" value="<?php echo esc_attr($_POST['email']); ?>"></div>
-                <div class="one-half"></div>
-                <div class="one-half last"></div>
-                <div class="one-fourth"></div>
-                <div class="one-fourth"></div>
-                <div class="one-fourth"></div>
-                <div class="one-fourth last"></div>
-                <div class="one-half"></div>
-                <div class="one-half last"></div>
-                <div class="one-fourth"><span class="font-bold">Password</span><span class="required">*</span></div>
-                <div class="one-fourth"><input name="password" type="password" id="password" placeholder="Password"></div>
-                <div class="one-fourth"><span class="font-bold">Confirm Password</span><span class="required">*</span></div>
-                <div class="one-fourth last"><input name="confirmPassword" type="password" id="confirmPassword" placeholder="Confirm Password"></div>
-                <div class="one-half"></div>
-                <div class="one-half last"></div>
-                <div class="one-fourth"></div>
-                <div class="one-fourth"></div>
-                <div class="one-fourth"></div>
-                <div class="one-fourth last"></div>
-                <div class="divider" style="height: 50px;"></div>
-                <div class="clear"></div>
-                <h2 class="title">Payment Details</h2>
-                <div class="one-half"></div>
-                <div class="one-half last"></div>
-                <div class="one-fourth"><span class="font-bold">Card Number</span><span class="required">*</span></div>
-                <div class="one-fourth"><input maxlength="16" name="cardNum" id="cardNum" size="30" type="number" placeholder="Card Number" value="<?php echo esc_attr($_POST['cardNum']); ?>"></div>
-                <div class="one-fourth"><span class="font-bold">CVV</span><span class="required">*</span></div>
-                <div class="one-fourth last"><input maxlength="4" name="cvv" id="cvv" type="password" placeholder="CVV"></div>
-                <div class="one-fourth"><span class="font-bold">Expiration Month / Year </span> <span class="required">*</span>&nbsp;</div>
-                <div class="one-fourth">
-                  <select name="expirationMonth" id="expirationMonth">
-                    <option value="00" selected="selected" disabled="disabled"> Select Month</option>
-                    <option value="01"> Jan </option>
-                    <option value="02"> Feb </option>
-                    <option value="03"> Mar </option>
-                    <option value="04"> Apr </option>
-                    <option value="05"> May </option>
-                    <option value="06"> June </option>
-                    <option value="07"> July </option>
-                    <option value="08"> Aug </option>
-                    <option value="09"> Sept </option>
-                    <option value="10"> Oct </option>
-                    <option value="11"> Nov </option>
-                    <option value="12"> Dec </option>
-                  </select>
-              </div>
-              <div class="one-fourth">
-                <select name="expirationYear" id="expirationYear">
-                  <option value="00" selected="selected" disabled="disabled"> Select Year</option>
-                  <?php
-                      for($intYear = $YEAR; $intYear < ($YEAR + 10); $intYear++)
-                         echo "<option value=".$intYear."> ".$intYear." </option>"
-                  ?>
-                </select>
-              </div>
-
-              <div class="one-fourth last"></div>
-              <div class="one-fourth"><span class="font-bold">Human Verification</span><span class="required">*</span></div>
-                <div class="one-fourth"><input name="message_human" type="text" id="message_human " placeholder="X"> +3= 5</div>
-                <div class="one-fourth"><input type="hidden" name="submitted" value="1"></div>
-                <div class="one-fourth last"></div>
-              <div class="one"><input name="submit" type="submit" value="Register Now"></div>
-              </form>
-            </div>
-            </div><!-- .entry-content -->
-          </article><!-- #post -->
+<div class="one">
+  <form action ="<?php the_permalink(); ?>" method="Post" id="registrationForm"  name="registrationForm">
+    <?php echo $response; ?> <br>
+    <h2 class="title">Basic Details</h2>
+    <div class="divider" style="height: 30px;"></div>
+    <div class="clear"></div>
+    <div class="one-half"></div>
+    <div class="one-half last"></div>
+    <div class="one-fourth">
+      <span class="font-bold">Full Name </span><span class="required">*</span>
+    </div>
+  <div class="one-fourth">
+    <input name="fullName" type="text" id="fullName" placeholder="Full Name" value="<?php echo esc_attr($_POST['fullName']); ?>">
+  </div>
+  <div class="one-fourth">
+    <span class="font-bold">E-mail</span><span class="required">*</span>
+  </div>
+  <div class="one-fourth last">
+    <input name="email" id="email" type="email" placeholder="sample@example.com" title = "Please enter valid email" value="<?php echo esc_attr($_POST['email']); ?>">
+  </div>
+  <div class="one-half"></div>
+  <div class="one-half last"></div>
+  <div class="one-fourth"></div>
+  <div class="one-fourth"></div>
+  <div class="one-fourth"></div>
+  <div class="one-fourth last"></div>
+  <div class="one-half"></div>
+  <div class="one-half last"></div>
+  <div class="one-fourth">
+    <span class="font-bold">Password</span><span class="required">*</span>
+  </div>
+  <div class="one-fourth">
+    <input name="password" type="password" id="password" placeholder="Password">
+  </div>
+  <div class="one-fourth">
+    <span class="font-bold">Confirm Password</span><span class="required">*</span>
+  </div>
+  <div class="one-fourth last">
+    <input name="confirmPassword" type="password" id="confirmPassword" placeholder="Confirm Password">
+  </div>
+  <div class="one-half"></div>
+  <div class="one-half last"></div>
+  <div class="one-fourth"></div>
+  <div class="one-fourth"></div>
+  <div class="one-fourth"></div>
+  <div class="one-fourth last"></div>
+  <div class="divider" style="height: 50px;"></div>
+  <div class="clear"></div>
+    <h2 class="title">Payment Details</h2>
+  <div class="one-half"></div>
+  <div class="one-half last"></div>
+  <div class="one-fourth">
+    <span class="font-bold">Card Number</span><span class="required">*</span>
+  </div>
+  <div class="one-fourth">
+    <input maxlength="16" name="cardNum" id="cardNum" size="30" type="number" placeholder="Card Number" value="<?php echo esc_attr($_POST['cardNum']); ?>">
+  </div>
+  <div class="one-fourth">
+    <span class="font-bold">CVV</span><span class="required">*</span>
+  </div>
+  <div class="one-fourth last">
+    <input maxlength="4" name="cvv" id="cvv" type="password" placeholder="CVV">
+  </div>
+  <div class="one-fourth">
+    <span class="font-bold">Expiration Month / Year </span> <span class="required">*</span>&nbsp;
+  </div>
+  <div class="one-fourth">
+    <select name="expirationMonth" id="expirationMonth">
+      <option value="00" selected="selected" disabled="disabled"> Select Month</option>
+      <option value="01"> Jan </option>
+      <option value="02"> Feb </option>
+      <option value="03"> Mar </option>
+      <option value="04"> Apr </option>
+      <option value="05"> May </option>
+      <option value="06"> June </option>
+      <option value="07"> July </option>
+      <option value="08"> Aug </option>
+      <option value="09"> Sept </option>
+      <option value="10"> Oct </option>
+      <option value="11"> Nov </option>
+      <option value="12"> Dec </option>
+    </select>
+  </div>
+  <div class="one-fourth">
+    <select name="expirationYear" id="expirationYear">
+      <option value="00" selected="selected" disabled="disabled"> Select Year</option>
+        <?php
+        for($intYear = $YEAR; $intYear < ($YEAR + 10); $intYear++)
+        echo "<option value=".$intYear."> ".$intYear." </option>"
+        ?>
+      </select>
+  </div>
+  <div class="one-fourth last"></div>
+  <div class="one-fourth">
+      <span class="font-bold">Human Verification</span><span class="required">*</span>
+  </div>
+  <div class="one-fourth">
+    <input name="message_human" type="text" id="message_human " placeholder="X"> +3= 5
+  </div>
+  <div class="one-fourth">
+    <input type="hidden" name="submitted" value="1">
+  </div>
+  <div class="one-fourth last"></div>
+  <div class="one">
+    <input type="checkbox" id="privacyPolicy"> <label for="privacyPolicy">I agree to and have read and understood the 
+    <a href="<?php echo home_url().'/privacy-policy'?>" target="_blank"> Privacy Policy </a>
+  </div>
+  <div class="one">
+    <input name="submit" id="registerNow" class="btn-disbaled" type="submit" value="Register Now" disabled>
+  </div>
+  </form>
+</div>
+</div><!-- .entry-content -->
+</article><!-- #post -->
 <?php
 if (get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."add_class_title", true) != "no")
 {
@@ -243,6 +280,19 @@ if ($sidebar) get_sidebar();
 ?>
 
 <?php endwhile; // end of the loop. ?> 
-		
+<script>
+  //$("#privacyPolicy").not("")
+  $=jQuery;
+  $("#privacyPolicy").on("change", function(){
+    if($(this).is(":checked")){
+      $("#registerNow").removeAttr("disabled");
+      $("#registerNow").removeClass("btn-disbaled");
+    }
+    else{
+      $("#registerNow").attr("disabled","disabled");
+      $("#registerNow").addClass("btn-disbaled");
+    }
+  })
+</script>
 <?php get_footer(); ?>
 			

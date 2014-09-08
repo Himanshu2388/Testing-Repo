@@ -1,5 +1,20 @@
 <?php
 
+//add_action( 'after_setup_theme', 'validatePages' );
+/*$intPageId = validatePages();
+	function validatePages(){
+	//Redirect user if not looged in --> Himanshu
+		if(!is_user_logged_in() && (is_page('workout-gallery') || $PAGE_ID == 16 ) ){
+			echo "IN IF";
+			//wp_safe_redirect(home_url());
+			wp_safe_redirect(home_url());
+			//wp_redirect("http://fortuneworkinprogress.in/NuFit");
+			echo "IN AFTER";
+			}else{
+				echo "IN ELSE";
+		}
+		return $PAGE_ID;
+	}*/
 global $userdata;
 global $wpdb;
 global $wp_session;
@@ -19,13 +34,13 @@ global $PAGE_ID;
 |		|	464 		|	Yoga to Relax 				|									 					|
 |		|	472 		|	Aerobics 					|									 					|
 |		|	585 		|	Our Team 					|														|
+|		|	601 		|	Profile  					|														|
 |		|-----------------------------------------------|									 					|
 |											 																	|
 |											 																	|
 |	Warning:	NEVER HAVE ANY DISPLAYS BEFORE wp_safe_redirect(), or else the code doesn't work!!	 			|
 |											 																	|
 |===============================================================================================================*/
-
 
 $PAGE_ID = get_the_ID();
 if (!is_user_logged_in() && ( 
@@ -36,6 +51,7 @@ if (!is_user_logged_in() && (
 							||	$PAGE_ID == "464"
 							||	$PAGE_ID == "472"
 							||	$PAGE_ID == "585"
+							|| 	$PAGE_ID == "601"
 						)
 	) { 
 	//echo "page id = #".$PAGE_ID."#"; 
