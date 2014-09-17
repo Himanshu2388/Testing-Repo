@@ -2,7 +2,7 @@
 /*
 Template Name: Custom Wordpress NuFit Profile
 */
-
+error_reporting(-1);
 $response = "";
 $YEAR = date("Y");
 
@@ -19,6 +19,23 @@ $userId = get_current_user_id();
 
 $programAction = isset($_POST['action']) ? $_POST['action'] : "";
 
+/**
+ * check for User record 'Before Inserting' in ' wp_measurment '
+ * @name checkBeforeInsert
+ * @return boolFlag
+ * @param intUserId 
+ **/
+function checkBeforeInsert($intUserId){
+
+    $strQuery = sprintf("SELECT user_id 
+                         FROM wp_measurements 
+                         WHERE user_id = %d ", mysqli_real_escape_string($intUserId)
+                       );
+    $arrResult = mysqli_query($strQuery);
+    return mysqli_num_rows($arrResult);
+}
+
+
 if($programAction!=""){
     switch($programAction){
         case "updatePersonalDetailsAct": {
@@ -30,7 +47,7 @@ if($programAction!=""){
 
                 /*
                 check if data row exists in wp_measurements for this user_id....
-                IF YES --> (1) fetch data from wp_measuements
+                IF YES -->  (1) fetch data from wp_measuements
                             (2) import this data into wp_measurements_history
                             (3) update current wp_measurements with new values
 
@@ -38,20 +55,50 @@ if($programAction!=""){
 
                 */
 
+
+
+                if($_POST['measureHeight'] == "feet-inch"){
+                    $intHeightUnit1 = isset($_POST['height_ft'])    ? $_POST['height_ft']   : ""; 
+                    $intHeightUnit2 = isset($_POST['height_inch'])  ? $_POST['height_inch'] : "";  
+                }else{
+                    $intHeightUnit1 = isset($_POST['height_meter']) ? $_POST['height_meter'] : ""; 
+                    $intHeightUnit2 = isset($_POST['height_cm'])    ? $_POST['height_cm']    : "";  
+                }
+
+                /*Array for inserting values in 'wp_measurements' Table */
                 $arrInsertMeasurementData = array();
-                $arrInsertMeasurementData['height']           = trim($_POST['measureHeight']);
-                $arrInsertMeasurementData['weight']           = trim($_POST['measureWeight']);
-                $arrInsertMeasurementData['neck']             = trim($_POST['measureNeck']);
-                $arrInsertMeasurementData['chest']            = trim($_POST['measureChest']);
-                $arrInsertMeasurementData['arms']             = trim($_POST['measureArms']);
-                $arrInsertMeasurementData['waist']            = trim($_POST['measureWaist']);
-                $arrInsertMeasurementData['stomach_belly']    = trim($_POST['measureStomach']);
-                $arrInsertMeasurementData['hips']             = trim($_POST['measureHips']);
-                $arrInsertMeasurementData['shirt_waist']      = trim($_POST['shirtSizeWaist']);
-                $arrInsertMeasurementData['shirt_height']     = trim($_POST['shirtSizeHeight']);
-                $arrInsertMeasurementData['pants_waist']      = trim($_POST['pantsSizeWaist']);
-                $arrInsertMeasurementData['pants_height']     = trim($_POST['pantsSizeHeight']);
-                $arrInsertMeasurementData['user_id']          = $userId;
+                $arrInsertMeasurementData['height_unit']            = trim($_POST['measureHeight']);
+                $arrInsertMeasurementData['height_value1']          = $intHeightUnit1;
+                $arrInsertMeasurementData['height_value2']          = $intHeightUnit2;
+                $arrInsertMeasurementData['weight_unit']            = trim($_POST['measureWeightUnit']);
+                $arrInsertMeasurementData['weight_value']           = trim($_POST['measureWeight']);
+                $arrInsertMeasurementData['neck_unit']              = trim($_POST['measureNeckUnit']);
+                $arrInsertMeasurementData['neck_value']             = trim($_POST['measureNeck']);
+                $arrInsertMeasurementData['chest_unit']             = trim($_POST['measureChestUnit']);
+                $arrInsertMeasurementData['chest_value']            = trim($_POST['measureChest']);
+                $arrInsertMeasurementData['arms_unit']              = trim($_POST['measureArmsUnit']);
+                $arrInsertMeasurementData['arms_value']             = trim($_POST['measureArms']);
+                $arrInsertMeasurementData['waist_unit']             = trim($_POST['measureWaistUnit']);
+                $arrInsertMeasurementData['waist_value']            = trim($_POST['measureWaist']);
+                $arrInsertMeasurementData['stomach_belly_unit']     = trim($_POST['measureStomachUnit']);
+                $arrInsertMeasurementData['stomach_belly_value']    = trim($_POST['measureStomach']);
+                $arrInsertMeasurementData['hips_unit']              = trim($_POST['measureHipsUnit']);
+                $arrInsertMeasurementData['hips_value']             = trim($_POST['measureHips']);
+                $arrInsertMeasurementData['shirt_waist_unit']       = trim($_POST['shirtSizeWaistUnit']);
+                $arrInsertMeasurementData['shirt_waist_value']      = trim($_POST['shirtSizeWaist']);
+                $arrInsertMeasurementData['shirt_height_unit']      = trim($_POST['shirtSizeHeightUnit']);
+                $arrInsertMeasurementData['shirt_height_value']     = trim($_POST['shirtSizeHeight']);
+                $arrInsertMeasurementData['pants_waist_unit']       = trim($_POST['pantsSizeWaistUnit']);
+                $arrInsertMeasurementData['pants_waist_value']      = trim($_POST['pantsSizeWaist']);
+                $arrInsertMeasurementData['pants_height_unit']      = trim($_POST['pantsSizeHeightUnit']);
+                $arrInsertMeasurementData['pants_height_value']     = trim($_POST['pantsSizeHeight']);
+                $arrInsertMeasurementData['user_id']                = $userId;
+
+                $boolCheck = checkBeforeInsert($userId);
+                if($boolCheck >= 1){
+                    //Copy Records 
+                }else{
+                  //Insert Query goes here
                 $wpdb->insert(
                         'wp_measurements',
                         $arrInsertMeasurementData,
@@ -68,9 +115,24 @@ if($programAction!=""){
                             "%s",
                             "%s",
                             "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
+                            "%s",
                             "%d",
                     )
                 );
+                }
+                
                 
             break;
         }
@@ -85,6 +147,62 @@ if($programAction!=""){
     else $response = "<div class='error'>{$message}</div>";
 
   }
+
+    /**
+     * Function to generate Measuerement Units
+     * @name generateMeasurements
+     * @return void
+     * @param strType
+     **/
+    function generateMeasurements($strType)
+    {
+        switch ($strType) {
+
+            case 'feet':
+                    echo "<option value = '-1' selected=selected disabled=disabled> - - </option>";
+                    for($i=1; $i<=7; $i++) 
+                    { 
+                        echo "<option value = '$i' > $i </option>";
+                    }
+                break;
+
+            case 'inch':
+                    echo "<option value = '-1' selected=selected disabled=disabled> - - </option>";
+                    for($i=1; $i<=11; $i++) 
+                    { 
+                        echo "<option value = '$i' > $i </option>";
+                    }
+                break;
+
+            case 'meter':
+                    echo "<option value = '-1' selected=selected disabled=disabled> - - </option>";
+                    echo " <option value='1'> 1 </option>
+                           <option value='2'> 2 </option>";
+                break;
+
+            case 'cm':
+                    echo "<option value = '-1' selected=selected disabled=disabled> - - </option>";
+                    for($i=1; $i<=99; $i++) {
+                        echo "<option value= '$i'> $i </option>";
+                    }
+                break;
+
+            case 'kgAndLbs':
+                    echo"<option value = 'Kg'> Kg </option>
+                         <option value = 'Lbs'> Lbs </option>";   
+                break;
+
+            case 'inchAndCm':
+                echo"<option value = 'Inch'> Inch </option>
+                     <option value = 'Cm'> Cm </option>";
+                break;
+            default :
+               //## code-- 
+                break;
+        }
+    }
+
+
 
   //response messages
 /*  $not_human            = "Human verification incorrect.";
@@ -125,8 +243,8 @@ if($programAction!=""){
            echo "Username Not In Use!";*/
 
 //Select Query Running
-if (is_user_logged_in()){
-  $sql = "SELECT * FROM wp_users ";
+/*if (is_user_logged_in()){
+  $sql = "SELECT user_id FROM wp_measurements ";
   $result = $wpdb->get_results($sql) or die(mysql_error());
 
       foreach( $result as $results ) {
@@ -137,51 +255,7 @@ if (is_user_logged_in()){
 
 $arrUserDetails['name'] =" ";// isset($current_user->user_login) ? $current_user->user_login : '';
 }
-
-
-/*if(!$human == 0){
-    if(empty($arrUserPost['user_login']) || empty($arrUserPost['user_email']) || empty($arrUserPost['user_pass']) || 
-       empty($confirmPassword) || empty($cardNum) || empty($cvv)){
-          registration_form_response("error",$missing_content);              // Blank Fields
-    } else if(!filter_var($arrUserPost['user_email'], FILTER_VALIDATE_EMAIL)){
-        registration_form_response("error", $email_invalid);                      // Invalid Email address
-    } else if (username_exists($arrUserPost['user_login'])){                      
-            registration_form_response("error", $user_exists);                    // Username exisits
-    } else if(email_exists( $arrUserPost['user_email'] )){
-            registration_form_response('error', "Email already exisits!");        //Email exisits
-    } else if($arrUserPost['user_pass'] != $confirmPassword){
-           registration_form_response("error", $password_invalid);                // Password and confirm password not match
-    } else if($message_human!=2){
-          registration_form_response("error",$not_human);                         // Invalid answer
-    } else if(strlen($cardNum)<11){
-          registration_form_response("error","Invalid card number");              //Invlid Card Number
-    }else if(($expirationMonth ==0 || $expirationYear ==0) || ($expirationMonth < date('m') && $expirationYear < $YEAR)){
-       registration_form_response("error","Invalid Card Date");                   // Invalid card date
-    } else{
-      // Insert into Query Running Successfully
-      $arrUserPost['user_registered'] = date('Y-m-d H:i:s');
-      $arrUserPost['user_pass'] = wp_hash_password($arrUserPost['user_pass']);
-        $wpdb->insert(
-        'wp_users',
-          $arrUserPost,
-        array(
-          "%s",
-          "%s",
-          "%s",
-          "%s",
-          "%s",
-          "%s",
-          "%s"
-        )
-      );
-
-       registration_form_response("success","Your details saved successfully");   // Success Save details
-       $arrUserPost= array();
-       $_POST['fullName'] = $_POST['email'] = $_POST['email'] = $_POST['cardNum'] = "";
-    }
-
-}else if ($_POST['submitted']) registration_form_response("error", $missing_content);*/
-
+*/
 
 get_header(); 
 global $PAGE_ID;
@@ -315,8 +389,21 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
     font-weight: bold !important;
      padding-bottom: 2%;
   }
+  /*-------------- For All Select DropDowns*/
+  select{
+    color:black;
+  }
+  .measuringUnit{
+    font-style: italic;
+  }
+/*---------------- For Validator Plugin displaying error message*/
+.error {
+    border: 1px solid red;
+    border-radius: 3px;
+    color: red;
+}
 
-              </style>
+</style>
 
 <div class="one">
 </div>
@@ -334,38 +421,143 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
     <div id="tabTitle" class="one-fourth-heading"></div>
       <div id="tab1">
         <form id="personalDetials" name="personalDetails" action ="<?php the_permalink(); ?>" method="Post">
-            <div class="one-fourth one-fourth-heading">Name <br> <input type='text' name="fullName" id="fullName" value="<?php echo '' ?>" ></div>
-            <div class="one-fourth one-fourth-heading">DOB <br> <input id="datetimepicker" type="date" ></div>
-            <div class="one-fourth one-fourth-heading">Gender <br>
+            <div class="one-half">Name <br> <input type='text' name="fullName" id="fullName" value="<?php echo '' ?>" ></div>
+            <div class="one-half last">DOB <br> <input id="datetimepicker" name="dob" type="date" ><br><br></div> 
+            <div class="one-half">Gender <br>
                 <p class="field switch">
                     <label for="radio1" class="cd-left selected"><span>Male</span></label>
                     <label for="radio2" class="cd-right"><span>Female</span></label>
                 </p>
             <inpuy type="hidden" name="gender" id="gender" value="">
             </div>
-            <div class="one-fourth last one-fourth-heading">Address <br> <textarea name="address" id="address" rows="4" cols="30" class="resize-none"></textarea></div>
-            <div class="one-fourth"><input type="submit" id="personalDetialsSubmit" name="personalDetialsSubmit" value="Update Detials"></div>
+            <div class="one-half last">Address <br> <textarea name="address" id="address" rows="4" cols="30" class="resize-none"></textarea><br><br></div>
+            <div class="one-half"><input type="submit" id="personalDetialsSubmit" name="personalDetialsSubmit" value="Update Detials"></div>
         </form>
       </div>
       <div id="tab2">
           <form id="measurementDetials" name="measurementDetails" action ="<?php the_permalink(); ?>" method="Post">
-            <div class="one-fourth one-fourth-heading">Height <br> <input type='text' name="measureHeight" id="measureHeight" value=""></div>
-            <div class="one-fourth one-fourth-heading">Weight <br> <input id="measureWeight" name="measureWeight" type="text" ></div>
-            <div class="one-fourth one-fourth-heading">Neck <br> <input id="measureNeck" name="measureNeck" type="text" ></div>
-            <div class="one-fourth last one-fourth-heading">Chest <br> <input type='text' name="measureChest" id="measureChest" value=""></div>
-            
+               <div class='one-half'>
+                Height<br>
+                <select id = "measureHeight" name = "measureHeight" class="measuringUnit">
+                    <option value = "feet-inch">  Feet - Inch  </option>
+                    <option value = "meter-cm">  Meter - Cm  </option>
+                </select>
 
-            <div class="one-fourth one-fourth-heading">Arms <br> <input type='text' name="measureArms" id="measureArms" value=""></div>
-            <div class="one-fourth one-fourth-heading">Waist <br> <input type='text' name="measureWaist" id="measureWaist" value=""></div>
-            <div class="one-fourth one-fourth-heading"> Stomach(Belly-Button) <input type='text' name="measureStomach" id="measureStomach" value=""> </div>
-            <div class="one-fourth last one-fourth-heading">Hips <br> <input type='text' name="measureHips" id="measureHips" value=""></div>
+                <select id = "height_ft" name = "height_ft">
+                    <?php generateMeasurements('feet'); ?>
+                </select>
+                <select id = "height_inch" name = "height_inch">
+                    <?php generateMeasurements('inch'); ?>
+                </select>
 
-            <div class="one-fourth one-fourth-heading">Size of Shirt (Waist) <br> <input type='text' name="shirtSizeWaist" id="shirtSizeWaist" value=""></div>
-            <div class="one-fourth one-fourth-heading">Size of Shirt (Height) <br> <input type='text' name="shirtSizeHeight" id="shirtSizeHeight" value=""></div>
-            <div class="one-fourth one-fourth-heading">Size of Pants (Waist) <br> <input type='text' name="pantsSizeWaist" id="pantsSizeWaist" value=""></div>
-            <div class="one-fourth last one-fourth-heading">Size of Pants(Height)  <br> <input type='text' name="pantsSizeHeight" id="pantsSizeHeight" value=""></div>
-            
-            <div class="one-fourth"><input type="button" value="Update Detials" id="measurementDetialsSubmit" name="measurementDetialsSubmit"></div>
+                <select id="height_meter" name="height_meter">
+                   <?php generateMeasurements('meter'); ?>
+                </select>
+                <select id="height_cm" name="height_cm">
+                    <?php generateMeasurements('cm'); ?>
+                </select>
+            </div>
+            <div class='one-half last'>
+                Weight <br>
+                <select id = "measureWeightUnit" name = "measureWeightUnit" class="measuringUnit">
+                    <?php generateMeasurements('kgAndLbs'); ?>
+                </select>
+                <input id="measureWeight" name="measureWeight" type="text" size=3>
+                <br><br>
+            </div>
+            <div class='one-half'>
+                Neck<br> 
+                <select id = "measureNeckUnit" name = "measureNeckUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="measureNeck" name="measureNeck" type="text" size=3>
+            </div>
+
+            <div class='one-half last'>
+                Chest <br>
+                <select id = "measureChestUnit" name = "measureChestUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="measureChest" name="measureChest" type="text" size=3>
+                <br><br>
+            </div>
+
+            <div class='one-half'>
+                Arms<br> 
+                <select id = "measureArmsUnit" name = "measureArmsUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="measureArms" name="measureArms" type="text" size=3>
+            </div>
+
+            <div class='one-half last'>
+                Waist <br>
+                <select id = "measureWaistUnit" name = "measureWaistUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="measureWaist" name="measureWaist" type="text" size=3>
+                <br><br>
+            </div>
+
+            <div class='one-half'>
+                Stomach(Belly-Button)<br> 
+                <select id = "measureStomachUnit" name = "measureStomachUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="measureStomach" name="measureStomach" type="text" size=3>
+            </div>
+
+            <div class='one-half last'>
+                Hips <br>
+                <select id = "measureHipsUnit" name = "measureHipsUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="measureHips" name="measureHips" type="text" size=3>
+                <br><br>
+            </div>
+
+            <div class='one-half'>
+                Size of Shirt (Waist)<br> 
+                <select id = "shirtSizeWaistUnit" name = "shirtSizeWaistUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="shirtSizeWaist" name="shirtSizeWaist" type="text" size=3>
+            </div>
+
+            <div class='one-half last'>
+                Size of Shirt (Height) <br>
+                <select id = "shirtSizeHeightUnit" name = "shirtSizeHeightUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="shirtSizeHeight" name="shirtSizeHeight" type="text" size=3>
+                <br><br>
+            </div>
+
+             <div class='one-half'>
+                Size of Pants (Waist)<br> 
+                <select id = "pantsSizeWaistUnit" name = "pantsSizeWaistUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="pantsSizeWaist" name="pantsSizeWaist" type="text" size=3>
+            </div>
+
+            <div class='one-half last'>
+                Size of Pants (Height) <br>
+                <select id = "pantsSizeHeightUnit" name = "pantsSizeHeightUnit" class="measuringUnit">
+                    <?php generateMeasurements('inchAndCm'); ?>
+                </select>
+                <input id="pantsSizeHeight" name="pantsSizeHeight" type="text" size=3>
+                <br><br>
+            </div>
+
+              <div class='one-half'>
+                <input type="button" value="Update Details" id="measurementDetialsSubmit" name="measurementDetialsSubmit">
+            </div>
+
+            <div class='one-half last'>
+               < BMI CAL HERE >
+                <br><br>
+            </div>
           </form>
       </div>
       <div id="tab3">
@@ -379,6 +571,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
           </form>
       </div>
   </div>
+
 
 <?php
 if (get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."add_class_title", true) != "no")
@@ -412,18 +605,18 @@ $=jQuery;
               $('#' + $(this).attr('name')).fadeIn(); // Show content for the current tab
             }
         });
-    $(".cd-left, .cd-right").click(function(){
-        var parent = $(this).parents('.switch');
-        if($(this).hasClass("cd-left")){
-          $('.cd-right',parent).removeClass('selected');
-        }
-        else{
-          $('.cd-left',parent).removeClass('selected');
-        }
-        $(this).addClass('selected');
-        $("#gender").val($(this).text());
-        // alert("next span val="+ $(this).text()); //To get the Swtich Value
-    });
+          $(".cd-left, .cd-right").click(function(){
+              var parent = $(this).parents('.switch');
+              if($(this).hasClass("cd-left")){
+                $('.cd-right',parent).removeClass('selected');
+              }
+              else{
+                $('.cd-left',parent).removeClass('selected');
+              }
+              $(this).addClass('selected');
+              $("#gender").val($(this).text());
+              // alert("next span val="+ $(this).text()); //To get the Swtich Value
+          });
 
           $("#measurementDetialsSubmit").click(function(){
             strForm = $( "#measurementDetials" ).serialize();
@@ -436,17 +629,54 @@ $=jQuery;
                 data: strForm,
             success:function(response){
                 alert("SUCCESS");
-              console.log("IN SUCCESS"+response);
-
             },
             error:function(err){
-                alert("ERROR");
-                console.log("ERROR"+err.toSource());
+                alert("Opps!! There was some problem please try again");
             }
 
        });
     });
+    $("#personalDetials").validate({
+       rules: {
+            fullName: { 
+                        lettersonly: true,
+                        required : true,
+                    },
+            address:{
+                required:true
+            },
+            dob:{
+                required:true
+            }
+      },
+    });
+
+    $("#height_meter, #height_cm").hide();
+
+    $("#measureHeight").change(function(){
+
+        if($(this).val() == "meter-cm"){
+            $("#height_meter, #height_cm").show();
+            $("#height_ft, #height_inch").hide();            
+        }else{
+            $("#height_meter, #height_cm").hide();
+            $("#height_ft, #height_inch").show();
+        }
+
+    });
 
   });
+</script>
+
+<script src = <?php echo home_url()."/wp-content/themes/fitness/javascript/jquery.validate.js" ?>></script>
+
+<script>
+    /*Jquery Custom Parsers*/
+
+    //For Letters and Spaces Only
+    $.validator.addMethod("lettersonly", function(value, element) 
+    {
+        return this.optional(element) || /^[a-z," "]+$/i.test(value);
+    }, "Letters and spaces only please");
 </script>
 <?php get_footer(); ?>
