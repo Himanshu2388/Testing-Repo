@@ -15,7 +15,6 @@ if (!is_user_logged_in()) {
 }
 
 
-
 $arrMeasurementsDataTypes = array(
 	                            "%s",
 	                            "%s",
@@ -48,14 +47,24 @@ $arrMeasurementsDataTypes = array(
 	                    );
 $userId = get_current_user_id();
 
+//For getting Tab1 Data
+$arrWpUser = "SELECT * FROM wp_users WHERE ID=".$userId;
+$arrWpUserRes = $wpdb->get_results($arrWpUser);
+foreach( $arrWpUserRes as $arrPersonalTab ) {
+    $arrPersonalDeails[] =  $arrPersonalTab;
+}
+$arrPersonalDeails = reset($arrPersonalDeails);
+
 $programAction = isset($_POST['action']) ? $_POST['action'] : "";
-
-
-
 if($programAction!=""){
     switch($programAction){
-        case "updatePersonalDetailsAct": {
-
+        case "updatePersonalDetailsAction": {
+            $arrPersonalInfo['full_name'] = $_POST['fullName'];
+            $arrPersonalInfo['DOB'] = $_POST['dob'];
+            $arrPersonalInfo['gender'] = $_POST['gender'];
+            $arrPersonalInfo['address'] = $_POST['address'];
+            $arrPersonalInfo['ID'] = $userId;
+            updatePersonalInfo($arrPersonalInfo);
             break;
         }
 
@@ -176,7 +185,6 @@ if($programAction!=""){
                 break;
 
             case 'meter':
-                    /*echo "<option value = '0' selected=selected disabled=disabled> 0 </option>";*/
                     for($i=0; $i<=2; $i++){
                         
                         if($currentVal == $i){
@@ -202,29 +210,42 @@ if($programAction!=""){
                 break;
 
             case 'kgAndLbs':
-                     if($currentVal == "Lbs" ){
-                        echo "<option value = 'Lbs' selected> Lbs  </option>";
-                        echo "<option value = 'Kg'> Kg </option>";
-                     }
-                     else{
+                     if($currentVal == "Kg" ){
                         echo "<option value = 'Lbs'> Lbs  </option>";
                         echo "<option value = 'Kg' selected> Kg </option>";
+                     }
+                     else{
+                        echo "<option value = 'Lbs' selected> Lbs  </option>";
+                        echo "<option value = 'Kg'> Kg </option>";
                      } 
                 break;
 
-            case 'inchAndCm':
-                if($currentVal == "feet-inch"){
+            case 'lengthLabels':
+                if($currentVal == "meter-cm"){
                     /*echo "<option value = 'Inch' selected> Inch  </option>";
                     echo "<option value = 'Cm'> Cm </option>";*/
-                    echo "<option value = 'feet-inch' selected>  Feet - Inch  </option>";
-                    echo "<option value = 'meter-cm'>  Meter - Cm  </option>";
-                }
-                else{
-                    echo "<option value = 'feet-inch'>  Feet - Inch  </option>";
+					echo "<option value = 'feet-inch'>  Feet - Inch  </option>";
                     echo "<option value = 'meter-cm' selected>  Meter - Cm  </option>";
                 }
-
+                else{
+					echo "<option value = 'feet-inch' selected>  Feet - Inch  </option>";
+                    echo "<option value = 'meter-cm'>  Meter - Cm  </option>";
+                }
                 break;
+			
+			case 'lengthLabels2':
+                if($currentVal == "cm"){
+                    /*echo "<option value = 'Inch' selected> Inch  </option>";
+                    echo "<option value = 'Cm'> Cm </option>";*/
+					echo "<option value = 'inch'>  Inch  </option>";
+                    echo "<option value = 'cm' selected>  Cm  </option>";
+                }
+                else{
+					echo "<option value = 'inch' selected>  Inch  </option>";
+                    echo "<option value = 'cm'>  Cm  </option>";
+                }
+                break;
+			
             default :
                //## code-- 
                 break;
@@ -282,6 +303,28 @@ function checkBeforeInsert($intUserId){
     return reset($arrResponse);
 }
 
+function getMeasurementsHistory($intUserId){
+	global $wpdb;
+	$strQuery = "SELECT height_unit, height_value1, height_value2, 
+						weight_unit, weight_value, 
+						bmi_type, bmi_value, 
+						waist_unit, waist_value, 
+						chest_unit, chest_value, 
+						arms_unit, arms_value, 
+						stomach_belly_unit, stomach_belly_value, 
+						hips_unit, hips_value, modified_date 
+					FROM wp_measurements_history 
+                    WHERE user_id=".$intUserId." ".
+                    "ORDER BY modified_date DESC";
+
+	$arrResult = $wpdb->get_results($strQuery);
+	wpCheckDBError('CustomProfile / getMeasurementsHistory');
+	foreach( $arrResult as $arrValues ) {
+        $arrResponse[] =  $arrValues;
+    }
+	return $arrResponse;
+}
+
 /**
  * createMeasurementsHistory function
  * Function to current measurement record to measurement history
@@ -327,58 +370,24 @@ function udpateMeasurements($arrInsertMeasurementData)
     wpCheckDBError('CustomProfile / udpateMeasurements');
 }
 
-  //response messages
-/*  $not_human            = "Human verification incorrect.";
-  $missing_content      = "Please supply all information.";
-  $email_invalid        = "Email Address Invalid.";
-  $cardnumber_invalid   = "Please enter valid cardnumber";
-  $cvv_invalid          = "Please enter CVV code";
-  $month_invalid        = "Please Select Month";
-  $year_invalid         = "Please Select Year";
-  $password_invalid     = "Password and Confirm Password not match";
-  $message_unsent       = "Message was not sent. Try Again.";
-  $user_exists          =  "Username Already In Use!";
-  $message_sent         = "Thanks! Your message has been sent.";*/
 
-
-//user posted variables
-/*  $arrUserPost['user_login'] = $arrUserPost['full_name'] = $arrUserPost['display_name'] = trim($_POST['fullName']);
-  $arrUserPost['user_email'] = trim($_POST['email']);
-  $arrUserPost['user_pass'] = trim($_POST['password']);
-  $confirmPassword = trim($_POST['confirmPassword']);
-  $cardNum = trim($_POST['cardNum']);
-  $cvv = trim($_POST['cvv']);
-  $expirationMonth = trim($_POST['expirationMonth']);
-  $expirationYear = trim($_POST['expirationYear']);
-  $message_human  = trim($_POST['message_human']);
-  $human  = trim($_POST['submitted']);
-
-  //php mailer variables
-  $to = get_option('admin_email');
-  $subject = "Someone sent a message from ".get_bloginfo('name');
-  $headers = 'From: '. $email . "\r\n" .
-    'Reply-To: ' . $email . "\r\n";*/
-
-/*$username = 'admin';
-       if ( username_exists( $username ) )
-           echo "Username In Use!";
-       else
-           echo "Username Not In Use!";*/
-
-//Select Query Running
-/*if (is_user_logged_in()){
-  $sql = "SELECT user_id FROM wp_measurements ";
-  $result = $wpdb->get_results($sql) or die(mysql_error());
-
-      foreach( $result as $results ) {
-
-          $arrUserData[] =  $results;
-      }
-
-
-$arrUserDetails['name'] =" ";// isset($current_user->user_login) ? $current_user->user_login : '';
+/**
+ * updatePersonalInfo function
+ *
+ * @return array
+ * @author 
+ **/
+function updatePersonalInfo($arrPersonalInfo)
+{
+    global $wpdb;
+    $wpdb->update(
+        'wp_users',
+        $arrPersonalInfo,
+        array('ID' =>  $arrPersonalInfo['ID']),
+        array('%s','%s','%s','%s'),
+        array('%d'));
+    wpCheckDBError('CustomProfile / updatePersonalInfo');
 }
-*/
 
 get_header(); 
 global $PAGE_ID;
@@ -400,13 +409,6 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
               <?php the_content(); ?>
 
 <style type="text/css">
-    /*.error{
-        padding: 5px 9px;
-        border: 1px solid red;
-        color: red;
-        border-radius: 3px;
-    }*/
-
     .success{
         padding: 5px 9px;
         border: 1px solid green;
@@ -553,6 +555,30 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
         font-weight: bold;
         padding-bottom: 2%;
     }
+	.display-none{
+		display: none;
+	}
+    span.displayUnit{
+        font-size: 12px;
+    }
+
+    #overlay {
+        bottom: 0;
+        left: 26%;
+        position: static;
+        right: 0;
+        top: 0;
+    }
+    #loading {
+        width: auto;
+        height: 50px;
+        position: absolute;
+        margin: 0 auto;
+    }
+    #historyTable{
+        max-height: 150px;
+        overflow: auto;
+    }
 </style>
 
 <div class="one">
@@ -577,20 +603,20 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 	
 	<!---------------------
 	--- 	TAB 1		---
-	----------------------->
+	--------------------- -->
 	<div id="tab1">
 		<form id="personalDetials" name="personalDetails" action ="<?php the_permalink(); ?>" method="Post">
-			<div class="one-half">Name <br> <input type='text' name="fullName" id="fullName" value="<?php echo '' ?>" ></div>
-			<div class="one-half last">DOB <br> <input id="datetimepicker" name="dob" type="date" ><br><br></div> 
+			<div class="one-half">Name <br> <input type='text' name="fullName" id="fullName" value="<?php echo $arrPersonalDeails->full_name ?>" ></div>
+			<div class="one-half last">DOB <br> <input id="datetimepicker" name="dob" type="date" value="<?php echo isset($arrPersonalDeails->DOB) ? $arrPersonalDeails->DOB : '';?>" ><br><br></div> 
 			<div class="one-half">Gender <br>
 				<p class="field switch">
 					<label for="radio1" class="cd-left selected"><span>Male</span></label>
 					<label for="radio2" class="cd-right"><span>Female</span></label>
 				</p>
-            <input type="hidden" name="gender" id="gender" value="">
+            <input type="hidden" name="Gender" id="gender" value="Male">
             </div>
-            <div class="one-half last">Address <br> <textarea name="address" id="address" rows="4" cols="30" class="resize-none"></textarea><br><br></div>
-            <div class="one-half"><input type="submit" id="personalDetialsSubmit" name="personalDetialsSubmit" value="Update Detials"></div>
+            <div class="one-half last">Address <br> <textarea name="address" id="address" rows="4" cols="30" class="resize-none"><?php echo isset($arrPersonalDeails->address) ? $arrPersonalDeails->address : '';?></textarea><br><br></div>
+            <div class="one-half"><input type="button" id="personalDetialsSubmit" name="personalDetialsSubmit" value="Update Detials"></div>
         </form>
 	</div>
 	
@@ -612,24 +638,43 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 				Height<br>
 
 				<select id = "measureHeight" name = "measureHeight" class="measuringUnit">
-					<!-- <option value = "feet-inch">  Feet - Inch  </option>
-					<option value = "meter-cm">  Meter - Cm  </option> -->
-                    <?php generateMeasurements('inchAndCm',$arrCurrentUserValues->height_unit);  ?>
+                    <?php generateMeasurements('lengthLabels',$arrCurrentUserValues->height_unit);  ?>
 				</select>
+				<?php
+					if(isset($arrCurrentUserValues->height_unit) && $arrCurrentUserValues->height_unit == "meter-cm"){
+				?>
+						<select id="height_meter" name="height_meter">
+							<?php generateMeasurements('meter',$arrCurrentUserValues->height_value1); ?>
+						</select>
+						<select id="height_cm" name="height_cm">
+							<?php generateMeasurements('cm',$arrCurrentUserValues->height_value2); ?>
+						</select>
+						<select id = "height_ft" name = "height_ft" class="display-none">
+							<?php generateMeasurements('feet');  ?>
+						</select>
+						<select id = "height_inch" name = "height_inch" class="display-none">
+							<?php generateMeasurements('inch'); ?>
+						</select>
+				<?php
+					}
+					else{
+				?>
+						<select id="height_meter" name="height_meter" class="display-none">
+							<?php generateMeasurements('meter'); ?>
+						</select>
+						<select id="height_cm" name="height_cm" class="display-none">
+							<?php generateMeasurements('cm'); ?>
+						</select>
+						<select id = "height_ft" name = "height_ft">
+							<?php generateMeasurements('feet',$arrCurrentUserValues->height_value1);  ?>
+						</select>
+						<select id = "height_inch" name = "height_inch">
+							<?php generateMeasurements('inch',$arrCurrentUserValues->height_value2); ?>
+						</select>
+				<?php
+					}
+				?>
 
-				<select id = "height_ft" name = "height_ft">
-					<?php generateMeasurements('feet',$arrCurrentUserValues->height_value1);  ?>
-				</select>
-				<select id = "height_inch" name = "height_inch">
-					<?php generateMeasurements('inch',$arrCurrentUserValues->height_value2); ?>
-				</select>
-
-				<select id="height_meter" name="height_meter">
-					<?php generateMeasurements('meter',$arrCurrentUserValues->height_value1); ?>
-				</select>
-				<select id="height_cm" name="height_cm">
-					<?php generateMeasurements('cm',$arrCurrentUserValues->height_value2); ?>
-				</select>
 				<input type="hidden" name="bmiType" id="bmiType" value="<?php echo $arrCurrentUserValues->bmi_type ?>">
 				<input type="hidden" name="bmiValue" id="bmiValue"
                                      value="<?php inputValueCheck($arrCurrentUserValues->bmi_value)?>">
@@ -646,7 +691,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half'>
 				Neck<br> 
 				<select id = "measureNeckUnit" name = "measureNeckUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->neck_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->neck_unit); ?>
 				</select>
 				<input id="measureNeck" name="measureNeck" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->neck_value)?>">
@@ -655,7 +700,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half last'>
 				Chest <br>
 				<select id = "measureChestUnit" name = "measureChestUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->chest_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->chest_unit); ?>
 				</select>
 				<input id="measureChest" name="measureChest" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->chest_value)?>">
@@ -665,7 +710,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half'>
 				Arms<br> 
 				<select id = "measureArmsUnit" name = "measureArmsUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->arms_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->arms_unit); ?>
 				</select>
 				<input id="measureArms" name="measureArms" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->arms_value)?>">
@@ -674,7 +719,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half last'>
 				Waist <br>
 				<select id = "measureWaistUnit" name = "measureWaistUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->waist_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->waist_unit); ?>
 				</select>
 				<input id="measureWaist" name="measureWaist" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->waist_value)?>">
@@ -684,7 +729,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half'>
 				Stomach(Belly-Button)<br> 
 				<select id = "measureStomachUnit" name = "measureStomachUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->stomach_belly_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->stomach_belly_unit); ?>
 				</select>
 				<input id="measureStomach" name="measureStomach" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->stomach_belly_value)?>">
@@ -693,7 +738,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half last'>
 				Hips <br>
 				<select id = "measureHipsUnit" name = "measureHipsUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->hips_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->hips_unit); ?>
 				</select>
 				<input id="measureHips" name="measureHips" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->hips_value)?>">
@@ -703,7 +748,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half'>
 				Size of Shirt (Waist)<br> 
 				<select id = "shirtSizeWaistUnit" name = "shirtSizeWaistUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->shirt_waist_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->shirt_waist_unit); ?>
 				</select>
 				<input id="shirtSizeWaist" name="shirtSizeWaist" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->shirt_waist_value)?>">
@@ -712,7 +757,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half last'>
 				Size of Shirt (Height) <br>
 				<select id = "shirtSizeHeightUnit" name = "shirtSizeHeightUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->shirt_height_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->shirt_height_unit); ?>
 				</select>
 				<input id="shirtSizeHeight" name="shirtSizeHeight" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->shirt_height_value)?>">
@@ -722,7 +767,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half'>
 				Size of Pants (Waist)<br> 
 				<select id = "pantsSizeWaistUnit" name = "pantsSizeWaistUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->pants_waist_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->pants_waist_unit); ?>
 				</select>
 				<input id="pantsSizeWaist" name="pantsSizeWaist" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->pants_waist_value)?>">
@@ -731,7 +776,7 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			<div class='one-half last'>
 				Size of Pants (Height) <br>
 				<select id = "pantsSizeHeightUnit" name = "pantsSizeHeightUnit" class="measuringUnit">
-					<?php generateMeasurements('inchAndCm',$arrCurrentUserValues->pants_height_unit); ?>
+					<?php generateMeasurements('lengthLabels2',$arrCurrentUserValues->pants_height_unit); ?>
 				</select>
 				<input id="pantsSizeHeight" name="pantsSizeHeight" type="text" size=3 
                                           value="<?php inputValueCheck($arrCurrentUserValues->pants_height_value)?>">
@@ -739,26 +784,54 @@ $sidebar = get_post_meta(get_the_ID(), SYSTEM_VAR_PREFIX."select_sidebar", true)
 			</div>
 
 			<div class='one-half'>
+                 <span id="ajaxLoader"></span>
 				<input type="button" value="Update Details" id="measurementDetialsSubmit" name="measurementDetialsSubmit">
+               
 			</div>
 			<div class='one-half last'>
-				<br><br>
+				<br><br><br>
 			</div>
-			<div class="one">
+	 		<div class="one">
 				<h3> Measurements History </h3>
-				<table>
-					<tr>
-						<th> Height </th>
-						<th> Weight </th>
-						<th> BMI </th>
-						<th> Waist </th>
-						<th> Chest </th>
-						<th> Arms </th>
-						<th> Stomach </th>
-						<th> Hips </th>
-						<th> Date/Time </th>
-					</tr>
-				</table>
+                <div id="historyTable">
+    				<table>
+    					<tr>
+    						<th> Height </th>
+    						<th> Weight </th>
+    						<th> BMI </th>
+    						<th> Waist </th>
+    						<th> Chest </th>
+    						<th> Arms </th>
+    						<th> Stomach </th>
+    						<th> Hips </th>
+    						<th> Date/Time </th>
+    					</tr>
+                          <?php
+                              $arrMeasurementsHistory = getMeasurementsHistory($userId); 
+                              foreach($arrMeasurementsHistory as $historyKeys => $historyValues){
+                                echo "<tr>";
+                                          if($historyValues->height_unit == "meter-cm"){
+                                                echo "<td>". $historyValues->height_value1 .".". $historyValues->height_value2 .
+                                                " <span class='displayUnit'>(".$historyValues->height_unit.")</td>";
+                                          }else{
+                                                echo "<td>". $historyValues->height_value1 ." ' ". $historyValues->height_value2 .
+                                                " <span class='displayUnit'>(".$historyValues->height_unit.")</td>";
+                                          }
+
+                                          echo "<td>". $historyValues->weight_value . " <span class='displayUnit'>(".$historyValues->weight_unit.")</td>";
+                                          echo "<td>". $historyValues->bmi_value . " <span class='displayUnit'>(".$historyValues->bmi_type.")</td>";
+                                          echo "<td>". $historyValues->waist_value . " <span class='displayUnit'>(".$historyValues->waist_unit.")</td>";
+                                          echo "<td>". $historyValues->chest_value . " <span class='displayUnit'>(".$historyValues->chest_unit.")</td>";
+                                          echo "<td>". $historyValues->arms_value . " <span class='displayUnit'>(".$historyValues->arms_unit.")</td>";
+                                          echo "<td>". $historyValues->stomach_belly_value . " <span class='displayUnit'>(".$historyValues->stomach_belly_unit.")</td>";
+                                          echo "<td>". $historyValues->hips_value . " <span class='displayUnit'>(".$historyValues->hips_unit.")</td>";
+                                          echo "<td>". date('m/d/Y h:i', strtotime($historyValues->modified_date)) . "</td>";
+
+                                echo"</tr>";   
+                              }
+                          ?>
+    				</table>
+                </div>
 			</div>
 		</form>
 	</div>
@@ -830,31 +903,70 @@ if ($sidebar) get_sidebar();
 			// alert("next span val="+ $(this).text()); //To get the Swtich Value
 		});
 	
+
+    //Tab1 Form Submission
+    $("#personalDetialsSubmit").on('click',(function(){
+        if(!$("#personalDetials").valid()){
+            scrollToTop();
+            return false;
+        }
+        strForm = $( "#personalDetials" ).serialize();
+        strForm += "&action="+encodeURIComponent("updatePersonalDetailsAction");
+        $.ajax({
+                url:"<?php echo the_permalink(); ?>",
+                method:"POST",
+                data: strForm,
+                context: this,
+                success:function(response){
+                    alert("Your details saved successfully.");
+                    $(this).prop('disabled',false);
+                    $('#overlay').remove();
+                    scrollToTop();
+                },
+                error:function(err){
+                    alert("Oops! There was some problem with your request. Please try again");
+                    $(this).prop('disabled',false);
+                    $('#overlay').remove();
+                    scrollToTop();
+                }
+            });
+
+    }))
+
+    //Tab2 Form Submission
 		$("#measurementDetialsSubmit").on('click',(function(){
-            
             if(!checkHeightWeight()){
                 $("#bmiText").html("Please provide non-zero inputs for Height and Weight fields");
+                scrollToTop();
                 return false;
             }
+            if(!$("#measurementDetials").valid()){
+                $("#bmiText").html("Please provide non-zero inputs for the indicated fields");
+                scrollToTop();
+                return false;
+            }
+            overlay();
 			$(this).prop('disabled',true);
 			strForm = $( "#measurementDetials" ).serialize();
 			strForm += "&action="+encodeURIComponent("updateMeasurementAction");
-            if($("#measurementDetials").valid()){
-				$.ajax({
-					url:"<?php echo the_permalink(); ?>",
-					method:"POST",
-					data: strForm,
-					context: this,
-					success:function(response){
-						alert("Your details saved successfully.");
-						$(this).prop('disabled',false);
-					},
-					error:function(err){
-						alert("Oops! There was some problem with your request. Please try again");
-						$(this).prop('disabled',false);
-					}
-				});
-			}
+			$.ajax({
+				url:"<?php echo the_permalink(); ?>",
+				method:"POST",
+				data: strForm,
+				context: this,
+				success:function(response){
+					alert("Your details saved successfully.");
+					$(this).prop('disabled',false);
+                    $('#overlay').remove();
+                    scrollToTop();
+				},
+				error:function(err){
+					alert("Oops! There was some problem with your request. Please try again");
+					$(this).prop('disabled',false);
+                    $('#overlay').remove();
+                    scrollToTop();
+				}
+			});
 		}));
 	
 	
@@ -880,25 +992,70 @@ if ($sidebar) get_sidebar();
 					decimal: true,
 					required : true,
 				},
+                measureNeck: { 
+                    decimal: true,
+                    required : false,
+                },
+                measureChest: { 
+                    decimal: true,
+                    required : false,
+                },
+                measureArms: { 
+                    decimal: true,
+                    required : false,
+                },
+                measureWaist: { 
+                    decimal: true,
+                    required : false,
+                },
+                measureStomach: { 
+                    decimal: true,
+                    required : false,
+                },
+                measureHips: { 
+                    decimal: true,
+                    required : false,
+                },
+                shirtSizeWaist: { 
+                    decimal: true,
+                    required : false,
+                },
+                shirtSizeHeight: { 
+                    decimal: true,
+                    required : false,
+                },
+                pantsSizeWaist: { 
+                    decimal: true,
+                    required : false,
+                },
+                pantsSizeHeight: { 
+                    decimal: true,
+                    required : false,
+                },
 			}
 		});
 	
-		$("#height_meter, #height_cm").hide();
+		//$("#height_meter, #height_cm").hide();
 		var objBmiCalDetails = new Object();
 	
 		$("#measureHeight").on("change",function(){
 			if($(this).val() == "meter-cm"){
-                $("#height_ft, #height_inch").hide();
-                $("#height_meter, #height_cm").show();
+                //$("#height_ft, #height_inch").hide();
+                //$("#height_meter, #height_cm").show();
+				$("#height_ft, #height_inch").addClass("display-none");
+                $("#height_meter, #height_cm").removeClass("display-none");
                 $("#height_meter, #height_cm").val(0).change();
 			}
 			else{
-				$("#height_meter, #height_cm").hide();
-                $("#height_ft, #height_inch").show();
+				//$("#height_meter, #height_cm").hide();
+                //$("#height_ft, #height_inch").show();
+				$("#height_meter, #height_cm").addClass("display-none");
+                $("#height_ft, #height_inch").removeClass("display-none");
 				$("#height_ft, #height_inch").val(0).change();
 			}
 		});
 	
+        //Validation on Required Fields
 		$("#height_meter, #height_cm, #height_ft, #height_inch, #measureWeightUnit, #measureWeight").on("change keyup blur", 
 			function(){
 				$("#bmiText").html("");
@@ -909,32 +1066,10 @@ if ($sidebar) get_sidebar();
                     $("#bmiText").html("Please provide non-zero inputs for Height and Weight fields");
                     return false;
                 }
-
-                
-				/*objBmiCalDetails.heightUnit		= $("#measureHeight").val();
-	
-				if(objBmiCalDetails.heightUnit == "meter-cm"){
-					objBmiCalDetails.heightVal1 = Number($("#height_meter").val()).toFixed(2);
-					objBmiCalDetails.heightVal2 = Number($("#height_cm").val()).toFixed(2);
-				}
-				else{
-					objBmiCalDetails.heightVal1 = Number($("#height_ft").val()).toFixed(2);
-					objBmiCalDetails.heightVal2 = Number($("#height_inch").val()).toFixed(2);
-				}
-	
-				objBmiCalDetails.weightUnit		= $("#measureWeightUnit").val();
-				objBmiCalDetails.weightVal		= Number($("#measureWeight").val()).toFixed(2);
-				
-				if((objBmiCalDetails.heightVal1 == 0 && objBmiCalDetails.heightVal2 == 0)
-							||
-						objBmiCalDetails.weightVal == 0){
-					return false;
-				}
-				else{
-					calculateBMI(objBmiCalDetails);
-				}*/
 			}
 		);
+
+
 
 	});
 
@@ -1015,6 +1150,20 @@ if ($sidebar) get_sidebar();
 		$("#bmiValue").val(bmi);
 		$("#bmiText").html("Your calculated BMI is " + bmi + " (" + bmi_type + ")");
 	}
+
+    function overlay(){
+                //Overlay on Submit button
+        var over = '<div id="overlay">' +
+            '<img id="loading" src="<?php echo home_url(); ?>/wp-content/uploads/2014/09/ajax_loader.gif">' +
+            '</div>';
+        $(over).appendTo('#ajaxLoader');
+    }
+
+    function scrollToTop(){
+        $('html, body').animate({
+                           scrollTop: $("#bmiText").offset().top
+                       }, 200);
+    }
 </script>
 
 <script src = <?php echo home_url()."/wp-content/themes/fitness/javascript/jquery.validate.js" ?>></script>
